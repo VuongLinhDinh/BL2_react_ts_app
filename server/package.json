@@ -1,0 +1,27 @@
+{
+  "name": "web503-nodejs-base",
+  "version": "1.0.0",
+  "description": "web503-nodejs-base",
+  "main": "server.js",
+  "scripts": {
+    "start": "vite"
+  },
+  "keywords": [],
+  "author": "hoadv",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "http-status-codes": "^2.3.0",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "vite": "^4.5.3",
+    "vite-plugin-node": "^3.1.0"
+  }
+}
