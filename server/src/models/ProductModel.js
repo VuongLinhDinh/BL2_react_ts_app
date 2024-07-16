@@ -19,6 +19,14 @@ const ProductSchema = new Schema(
       type: String,
       required: true
     },
+    discount: {
+      type: Number,
+      default: 0
+    },
+    rating: {
+      type: Number,
+      default: 4.5
+    },
     category: {
       type: Schema.Types.ObjectId,
       ref: "Category"
