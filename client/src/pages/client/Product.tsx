@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
   Dialog,
@@ -15,14 +16,16 @@ import { useNavigate } from "react-router-dom";
 import instance from "src/axious";
 import Loading from "src/components/Loading";
 import ProductCard from "src/components/ProductCard";
+import { useLoading } from "src/contexts/loading";
 import { ProductTs } from "src/types/Product";
 
 function Product() {
   const [products, setProducts] = useState<ProductTs[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { loading, setLoading } = useLoading();
 
   const navigate = useNavigate();
+
   // get api
   const getAllProduct = async () => {
     try {
@@ -39,11 +42,13 @@ function Product() {
   useEffect(() => {
     getAllProduct();
   }, []);
+
   // handle error
   const handleCloseError = () => {
     setError(null);
     navigate("/404");
   };
+
   const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
     ...theme.typography.body2,
@@ -54,7 +59,7 @@ function Product() {
 
   return (
     <>
-      <Loading showLoading={loading} />
+      <Loading />
       <Stack
         direction={"row"}
         flexWrap={"wrap"}

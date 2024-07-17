@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import {
@@ -17,11 +18,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import instance from "src/axious";
 import Loading from "src/components/Loading";
+import { useLoading } from "src/contexts/loading";
 import { ProductTs } from "src/types/Product";
 
 function ProductDetail() {
   const { id } = useParams();
-  const [loading, setLoading] = useState<boolean>(false);
+  const { loading, setLoading } = useLoading();
   const [product, setProduct] = useState<ProductTs | undefined>();
   const [quantity, setQuantity] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,6 @@ function ProductDetail() {
     try {
       setLoading(true);
       const { data } = await instance.get(`/products/${id}`);
-
       setProduct(data);
     } catch (error) {
       setError("Failed to fetch product data. Please try again.");
@@ -68,7 +69,7 @@ function ProductDetail() {
 
   return (
     <>
-      <Loading showLoading={loading} />
+      <Loading />
       <Container sx={{ p: "40px" }}>
         {product && (
           <Stack direction={"row"} gap={3}>

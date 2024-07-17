@@ -139,9 +139,29 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </Stack>
       </HoverBox>
       <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          {product.name}
-        </Typography>
+        <Box
+          sx={{
+            display: "block",
+            overflow: "hidden",
+            maxHeight: "3.6em",
+            lineHeight: "1.8em"
+          }}
+        >
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{
+              fontSize: "20px",
+              fontWeight: "bold",
+              maxHeight: "3.6em",
+              display: "-webkit-box",
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: "vertical"
+            }}
+          >
+            {product.name}
+          </Typography>
+        </Box>
         <Box
           sx={{
             display: "block",
