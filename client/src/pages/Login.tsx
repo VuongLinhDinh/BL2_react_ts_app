@@ -10,11 +10,10 @@ import {
   Box
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import instance from "src/axious/index";
+import instance from "src/axious";
 
 type LoginFormParams = {
   email: string;
@@ -22,7 +21,9 @@ type LoginFormParams = {
 };
 
 const Login = () => {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const {
     register,
@@ -32,8 +33,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (accessToken) {
+    const token = localStorage.getItem("token");
+    if (token) {
       setSuccessMessage("You are already logged in!");
       setTimeout(() => {
         navigate("/product");
@@ -53,21 +54,28 @@ const Login = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      setErrorMessage(null); // Clear error message on success
+      setEmailError(null); // Clear error messages on success
+      setPasswordError(null);
+      setGeneralError(null);
       setSuccessMessage("Login successful!");
       setTimeout(() => {
         navigate("/product");
       }, 2000); // Redirect after 2 seconds
     } catch (error: any) {
-      // Check if the error has a response and display a more detailed message if possible
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        setErrorMessage(`Failed to login: ${error.response.data.message}`);
+      if (error.response && error.response.data) {
+        const errorMsg =
+          error.response.data.message || "Failed to login. Please try again.";
+        if (errorMsg.includes("email")) {
+          setEmailError(errorMsg);
+          setPasswordError(null);
+        } else if (errorMsg.includes("password")) {
+          setPasswordError(errorMsg);
+          setEmailError(null);
+        } else {
+          setGeneralError(errorMsg);
+        }
       } else {
-        setErrorMessage("Failed to login. Please try again.");
+        setGeneralError("Failed to login. Please try again.");
       }
       console.error("Error details:", error);
     }
@@ -87,9 +95,9 @@ const Login = () => {
       <Typography variant="h4" textAlign={"center"} mb={2}>
         Login
       </Typography>
-      {errorMessage && (
+      {generalError && (
         <Typography color="error" textAlign={"center"} mb={2}>
-          {errorMessage}
+          {generalError}
         </Typography>
       )}
       <Snackbar
@@ -116,7 +124,6 @@ const Login = () => {
             sx={{ cursor: "pointer" }}
           >
             <Link to={"/product"}>
-              {" "}
               <CloseIcon />
             </Link>
           </Box>
@@ -131,8 +138,8 @@ const Login = () => {
                 message: "Invalid email address"
               }
             })}
-            error={!!errors?.email?.message}
-            helperText={errors?.email?.message}
+            error={!!errors?.email?.message || !!emailError}
+            helperText={errors?.email?.message || emailError}
           />
           <TextField
             label="Password"
@@ -144,8 +151,8 @@ const Login = () => {
               }
             })}
             type="password"
-            error={!!errors?.password?.message}
-            helperText={errors?.password?.message}
+            error={!!errors?.password?.message || !!passwordError}
+            helperText={errors?.password?.message || passwordError}
           />
           <Stack
             direction="row"

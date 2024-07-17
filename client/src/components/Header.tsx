@@ -28,12 +28,12 @@ function Header() {
   const [anchorEl, setAnchorEl] = useState<
     (EventTarget & HTMLImageElement) | null
   >(null);
-  const isLogin = !!localStorage.getItem("accessToken");
+  const isLogin = !!localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // handle logout
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.reload();
   };

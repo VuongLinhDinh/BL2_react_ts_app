@@ -6,8 +6,46 @@ import Product from "./pages/client/Product";
 import NotFound from "./components/NotFound";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import PrivateRoute from "./pages/PrivateRouter";
+import AdminLayout from "./components/layouts/AdminLayout";
+import ProductList from "./pages/admin/products/ProductList";
+import Admin from "./pages/admin/Admin";
+import ProductAdd from "./pages/admin/products/ProductAdd";
+import ProductEdit from "./pages/admin/products/ProductEdit";
 
 const routeConfig = [
+  {
+    path: "admin",
+    element: <PrivateRoute />,
+    children: [
+      {
+        path: "",
+        element: <AdminLayout />,
+        children: [
+          {
+            path: "",
+            element: <Navigate to="/admin/dashboard" />
+          },
+          {
+            path: "/admin/dashboard",
+            element: <Admin />
+          },
+          {
+            path: "/admin/product/list",
+            element: <ProductList />
+          },
+          {
+            path: "/admin/product/add",
+            element: <ProductAdd />
+          },
+          {
+            path: "/admin/product/edit/:id",
+            element: <ProductEdit />
+          }
+        ]
+      }
+    ]
+  },
   {
     path: "/",
     element: <ClientLayout />,

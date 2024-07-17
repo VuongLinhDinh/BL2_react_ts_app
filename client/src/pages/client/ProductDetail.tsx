@@ -32,13 +32,8 @@ function ProductDetail() {
     try {
       setLoading(true);
       const { data } = await instance.get(`/products/${id}`);
-      const { data: categories } = await instance.get(`/categories`);
-      console.log(categories[1].name);
-      const category = categories.find(
-        (category: { _id: string }) => category._id === data.categoryId
-      );
 
-      setProduct({ ...data, category });
+      setProduct(data);
     } catch (error) {
       setError("Failed to fetch product data. Please try again.");
       setNavigateAfterError(true);
@@ -83,7 +78,7 @@ function ProductDetail() {
                 {product.name}
               </Typography>
               <Typography component="h6" fontSize={"15px"}>
-                {product.category ? product.category.name : "No Category"}
+                {product.category.name ? product.category.name : "No Category"}
               </Typography>
               <Typography
                 fontWeight={"bold"}
