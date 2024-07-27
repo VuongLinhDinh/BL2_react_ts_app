@@ -2,6 +2,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import {
+  Box,
   Button,
   Container,
   Dialog,
@@ -14,6 +15,8 @@ import {
   Typography
 } from "@mui/material";
 import Rating from "@mui/material/Rating";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import instance from "src/axious";
@@ -23,7 +26,7 @@ import { ProductTs } from "src/types/Product";
 
 function ProductDetail() {
   const { id } = useParams();
-  const { loading, setLoading } = useLoading();
+  const { setLoading } = useLoading();
   const [product, setProduct] = useState<ProductTs | undefined>();
   const [quantity, setQuantity] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
@@ -71,33 +74,115 @@ function ProductDetail() {
     <>
       <Loading />
       <Container sx={{ p: "40px" }}>
+        <Stack
+          direction={"row"}
+          justifyContent={"start"}
+          alignItems={"center"}
+          bgcolor={"#F9F1E7"}
+          height={"50px"}
+          p={5}
+          marginBottom={"35px"}
+          gap={2}
+        >
+          <Typography color={"#9F9F9F"} fontSize={"16px"}>
+            Home
+          </Typography>
+          <ArrowForwardIosIcon
+            sx={{ color: "#000", fontSize: "20px" }}
+            width={"15px"}
+            height={"15px"}
+          />
+          <Typography color={"#9F9F9F"} fontSize={"16px"}>
+            Shop
+          </Typography>
+          <ArrowForwardIosIcon
+            sx={{ color: "#000", fontSize: "20px" }}
+            width={"15px"}
+            height={"15px"}
+          />
+          <HorizontalRuleIcon
+            sx={{
+              transform: "rotate(90deg)",
+              fontWeight: "200",
+              color: "#9F9F9F"
+            }}
+          />
+          {product?.name}
+        </Stack>
         {product && (
-          <Stack direction={"row"} gap={3}>
-            <img src={product.images} alt="" width={"500px"} />
-            <Stack gap={2}>
-              <Typography component="h1" fontSize={"26px"}>
+          <Stack direction={"row"} gap={7} p={5}>
+            <Stack direction={"row"} gap={4}>
+              <Stack direction={"column"} gap={3}>
+                <img
+                  src={product.images}
+                  alt=""
+                  width={"100px"}
+                  height={"100px"}
+                  style={{ borderRadius: "10px" }}
+                />
+                <img
+                  src={product.images}
+                  alt=""
+                  width={"100px"}
+                  height={"100px"}
+                  style={{ borderRadius: "10px" }}
+                />
+                <img
+                  src={product.images}
+                  alt=""
+                  width={"100px"}
+                  height={"100px"}
+                  style={{ borderRadius: "10px" }}
+                />
+                <img
+                  src={product.images}
+                  alt=""
+                  width={"100px"}
+                  height={"100px"}
+                  style={{ borderRadius: "10px" }}
+                />
+              </Stack>
+
+              <img
+                src={product.images}
+                alt=""
+                width={"423px"}
+                style={{ borderRadius: "10px" }}
+              />
+            </Stack>
+
+            <Stack>
+              <Typography component="h1" fontSize={"42px"}>
                 {product.name}
               </Typography>
-              <Typography component="h6" fontSize={"15px"}>
-                {product.category.name ? product.category.name : "No Category"}
-              </Typography>
               <Typography
-                fontWeight={"bold"}
-                color={"Highlight"}
-                fontSize={"20px"}
+                fontWeight={"400"}
+                sx={{
+                  fontSize: "24px",
+                  color: "#9F9F9F",
+                  marginBottom: "5px"
+                }}
               >
-                ${product.price}
+                {product.price.toLocaleString()}đ
               </Typography>
-              <Typography fontSize={"20px"}>Rate: {product.rating}</Typography>
               <Rating
                 name="half-rating-read"
                 defaultValue={product.rating}
                 precision={0.1}
-                sx={{ fontSize: 20 }}
+                sx={{ fontSize: 20, marginY: "5px" }}
                 readOnly
               />
-              <Typography>{product.description}</Typography>
-              <Stack direction="row" alignItems="center" gap={1}>
+              <Typography sx={{ fontSize: "13px", width: "424px" }}>
+                {product.description}
+              </Typography>
+              <Stack
+                direction="row"
+                alignItems="center"
+                gap={1}
+                p={2}
+                bgcolor={"#ccc"}
+                border={"1px solid #816DFA"}
+              >
                 <IconButton
                   onClick={handleDecreaseQuantity}
                   aria-label="decrease"
@@ -108,7 +193,12 @@ function ProductDetail() {
                   value={quantity}
                   inputProps={{ readOnly: true }}
                   size="small"
-                  sx={{ width: 50, textAlign: "center" }}
+                  sx={{
+                    width: 50,
+                    textAlign: "center",
+                    outline: "none",
+                    boder: "none"
+                  }}
                 />
                 <IconButton
                   onClick={handleIncreaseQuantity}

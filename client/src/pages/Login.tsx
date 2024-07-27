@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
   Container,
@@ -14,6 +13,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "src/axious";
+import { useAuth } from "src/contexts/AuthContext";
 
 type LoginFormParams = {
   email: string;
@@ -31,40 +31,37 @@ const Login = () => {
     formState: { errors }
   } = useForm<LoginFormParams>();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      setSuccessMessage("You are already logged in!");
+      setSuccessMessage("Bạn đã đăng nhập!");
       setTimeout(() => {
         navigate("/product");
-      }, 2000); // Redirect after 2 seconds
+      }, 2000); // Chuyển hướng sau 2 giây
     }
   }, [navigate]);
 
   const onSubmit: SubmitHandler<LoginFormParams> = async (data) => {
     try {
       const response = await instance.post("/auth/login", data);
-      console.log("Response:", response); // Log response to verify
-      const { token, user } = response.data; // Assuming API returns accessToken and user
-      console.log("Token:", token); // Log accessToken to verify
-      console.log("User:", user); // Log user to verify
+      const { token, user } = response.data;
 
-      // Store accessToken and user in localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      login(token, user);
 
-      setEmailError(null); // Clear error messages on success
+      setEmailError(null);
       setPasswordError(null);
       setGeneralError(null);
-      setSuccessMessage("Login successful!");
+      setSuccessMessage("Đăng nhập thành công!");
       setTimeout(() => {
         navigate("/product");
-      }, 2000); // Redirect after 2 seconds
+      }, 2000); // Chuyển hướng sau 2 giây
     } catch (error: any) {
       if (error.response && error.response.data) {
         const errorMsg =
-          error.response.data.message || "Failed to login. Please try again.";
+          error.response.data.message ||
+          "Đăng nhập thất bại. Vui lòng thử lại.";
         if (errorMsg.includes("email")) {
           setEmailError(errorMsg);
           setPasswordError(null);
@@ -75,9 +72,9 @@ const Login = () => {
           setGeneralError(errorMsg);
         }
       } else {
-        setGeneralError("Failed to login. Please try again.");
+        setGeneralError("Đăng nhập thất bại. Vui lòng thử lại.");
       }
-      console.error("Error details:", error);
+      console.error("Chi tiết lỗi:", error);
     }
   };
 
@@ -93,7 +90,7 @@ const Login = () => {
       }}
     >
       <Typography variant="h4" textAlign={"center"} mb={2}>
-        Login
+        Đăng nhập
       </Typography>
       {generalError && (
         <Typography color="error" textAlign={"center"} mb={2}>
@@ -127,27 +124,26 @@ const Login = () => {
               <CloseIcon />
             </Link>
           </Box>
-
           <TextField
             sx={{ width: "100%", borderRadius: "10px" }}
             label="Email"
             {...register("email", {
-              required: "Email is required",
+              required: "Email là bắt buộc",
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: "Invalid email address"
+                message: "Email không hợp lệ"
               }
             })}
             error={!!errors?.email?.message || !!emailError}
             helperText={errors?.email?.message || emailError}
           />
           <TextField
-            label="Password"
+            label="Mật khẩu"
             {...register("password", {
-              required: "Password is required",
+              required: "Mật khẩu là bắt buộc",
               minLength: {
                 value: 6,
-                message: "Password must be at least 6 characters"
+                message: "Mật khẩu phải có ít nhất 6 ký tự"
               }
             })}
             type="password"

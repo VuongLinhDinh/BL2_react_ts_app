@@ -2,16 +2,19 @@ import { Navigate, useRoutes } from "react-router-dom";
 import ClientLayout from "src/components/layouts/ClientLayout";
 // import Product from "src/pages/client/Product";
 import ProductDetail from "src/pages/client/ProductDetail";
-import Product from "./pages/client/Product";
-import NotFound from "./components/NotFound";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import PrivateRoute from "./pages/PrivateRouter";
 import AdminLayout from "./components/layouts/AdminLayout";
-import ProductList from "./pages/admin/products/ProductList";
+import NotFound from "./components/NotFound";
 import Admin from "./pages/admin/Admin";
+import CategoryList from "./pages/admin/categories/CategoryList";
 import ProductAdd from "./pages/admin/products/ProductAdd";
 import ProductEdit from "./pages/admin/products/ProductEdit";
+import ProductList from "./pages/admin/products/ProductList";
+import Product from "./pages/client/Product";
+import Login from "./pages/Login";
+import PrivateRoute from "./pages/PrivateRouter";
+import Register from "./pages/Register";
+import StepProviderWrapper from "./pages/StepProviderWrapper";
+import CategoryForm from "./pages/admin/categories/CategoryForm";
 
 const routeConfig = [
   {
@@ -41,6 +44,18 @@ const routeConfig = [
           {
             path: "/admin/product/edit/:id",
             element: <ProductEdit />
+          },
+          {
+            path: "/admin/category/list",
+            element: <CategoryList />
+          },
+          {
+            path: "/admin/category/add",
+            element: <CategoryForm />
+          },
+          {
+            path: "/admin/category/edit/:id",
+            element: <CategoryForm />
           }
         ]
       }
@@ -61,6 +76,10 @@ const routeConfig = [
       {
         path: "product/:id",
         element: <ProductDetail />
+      },
+      {
+        path: "step",
+        element: <StepProviderWrapper />
       }
     ]
   },

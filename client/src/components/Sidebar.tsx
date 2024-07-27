@@ -27,7 +27,7 @@ export default function Sidebar() {
 
   const ListNavigate = [
     { text: "Dashboard", link: "/admin" },
-    { text: "Categories", link: "/admin/categories" },
+    { text: "Categories", link: "/admin/category/list" },
     { text: "Products", link: "/admin/product/list" },
     { text: "Message", link: "/admin/message" },
     { text: "All Mail", link: "/admin/allmail" },

@@ -1,9 +1,15 @@
 import { Box, Stack } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import Sidebar from "../Sidebar";
 import HeaderAdmin from "../admin/HeaderAdmin";
 
 const AdminLayout = () => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  console.log("is user: " + user.role);
+  if (user.role !== "admin") {
+    return <Navigate to="/login" />;
+  }
+
   return (
     <Stack
       direction={"row"}

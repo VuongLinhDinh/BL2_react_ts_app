@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-
-import { ProductTs } from "src/types/Product";
+import { useContext, useEffect, useState } from "react";
 import {
   Box,
   Table,
@@ -20,7 +18,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button
+  Button,
+  Alert
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
@@ -28,51 +27,38 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { Link } from "react-router-dom";
-import instance from "src/axious";
+import { ProductContext } from "src/contexts/ProductContext";
 
 const ProductList = () => {
-  const [products, setProducts] = useState<ProductTs[]>([]);
+  const { state, dispatch, removeProduct } = useContext(ProductContext);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
-  const getAllProduct = async () => {
-    try {
-      setLoading(true);
-      const { data } = await instance.get("/products");
-      setProducts(data);
-    } catch (error) {
-      setError("Failed to fetch products. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    getAllProduct();
-  }, []);
+    setLoading(true);
+    dispatch({ type: "GET_PRODUCTS", payload: [] });
+    setLoading(false);
+  }, [dispatch]);
 
   const handleCloseError = () => {
     setError(null);
   };
 
+  const handleCloseSuccess = () => {
+    setSuccess(null);
+  };
+
   const handleToggleShow = (id: string) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product._id.toString() === id.toString()
-          ? { ...product, isShow: !product.isShow }
-          : product
-      )
-    );
-    const updatedProduct = products.find(
+    const updatedProduct = state.products.find(
       (product) => product._id.toString() === id
     );
+
     if (updatedProduct) {
-      localStorage.setItem(
-        `product_${id}_isShow`,
-        JSON.stringify(!updatedProduct.isShow)
-      );
+      updatedProduct.isShow = !updatedProduct.isShow;
+      dispatch({ type: "EDIT_PRODUCT", payload: updatedProduct });
     }
   };
 
@@ -89,21 +75,12 @@ const ProductList = () => {
   const handleDeleteProduct = async () => {
     if (!productToDelete) return;
 
-    try {
-      setLoading(true);
-      await instance.delete(`/products/${productToDelete}`);
-      setProducts((prevProducts) =>
-        prevProducts.filter(
-          (product) => product._id.toString() !== productToDelete
-        )
-      );
-      setOpenDialog(false);
-      setProductToDelete(null);
-    } catch (error) {
-      setError("Failed to delete product. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    await removeProduct(productToDelete);
+    setLoading(false);
+    setOpenDialog(false);
+    setProductToDelete(null);
+    setSuccess("Bạn đã xóa sản phẩm thành công!");
   };
 
   return (
@@ -141,7 +118,7 @@ const ProductList = () => {
               </TableRow>
             </TableHead>
             <TableBody sx={{ borderRadius: "10px" }}>
-              {products.map((product) => (
+              {state.products.map((product) => (
                 <TableRow key={product._id}>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>
@@ -159,7 +136,6 @@ const ProductList = () => {
                     {product.discount} %
                   </TableCell>
                   <TableCell>
-                    {" "}
                     {(
                       product.price -
                       product.price * (product.discount / 100)
@@ -221,6 +197,19 @@ const ProductList = () => {
         onClose={handleCloseError}
         message={error}
       />
+      <Snackbar
+        open={!!success}
+        autoHideDuration={6000}
+        onClose={handleCloseSuccess}
+      >
+        <Alert
+          onClose={handleCloseSuccess}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {success}
+        </Alert>
+      </Snackbar>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>

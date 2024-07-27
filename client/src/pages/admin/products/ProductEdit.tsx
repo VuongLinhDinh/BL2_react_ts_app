@@ -19,21 +19,9 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
-
 import { Category } from "src/types/Category"; // Assume this type is defined
 import instance from "src/axious";
-
-// Define the form schema with zod
-const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  images: z.string().url("Invalid image URL").min(1, "Image is required"),
-  description: z.string().min(1, "Description is required"),
-  price: z.number().min(0, "Price must be a positive number"),
-  discount: z.number().min(0).max(100, "Discount must be between 0 and 100"),
-  rating: z.number().min(0).max(5, "Rating must be between 0 and 5"),
-  category: z.string().min(1, "Category is required"),
-  isShow: z.boolean()
-});
+import { productSchema } from "src/untils/validation";
 
 type ProductFormInputs = z.infer<typeof productSchema>;
 
@@ -49,25 +37,21 @@ const ProductEdit = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
+    reset,
     watch
   } = useForm<ProductFormInputs>({
-    resolver: zodResolver(productSchema)
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      category: "" // Provide a default value for category
+    }
   });
 
   const fetchProduct = async (productId: string) => {
     try {
       setLoading(true);
       const { data } = await instance.get(`/products/${productId}`);
-      // Populate form fields with fetched product data
-      setValue("name", data.name);
-      setValue("images", data.images);
-      setValue("description", data.description);
-      setValue("price", data.price);
-      setValue("discount", data.discount);
-      setValue("rating", data.rating);
-      setValue("category", data.category._id);
-      setValue("isShow", data.isShow);
+      console.log(data);
+      reset(data); // Reset form with fetched product data
     } catch (error) {
       setError("Failed to fetch product details. Please try again.");
     } finally {
@@ -89,9 +73,10 @@ const ProductEdit = () => {
 
   useEffect(() => {
     if (id) {
-      fetchProduct(id); // Fetch product details on component mount
+      fetchProduct(id);
     }
-    fetchCategories(); // Fetch categories for dropdown
+    fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const onSubmit: SubmitHandler<ProductFormInputs> = async (data) => {
@@ -110,6 +95,7 @@ const ProductEdit = () => {
   };
 
   const selectedCategory = watch("category");
+  console.log(selectedCategory);
 
   return (
     <Container>
@@ -179,8 +165,15 @@ const ProductEdit = () => {
             value={selectedCategory || ""}
             error={!!errors.category}
           >
+            <MenuItem value="" disabled>
+              Select a category
+            </MenuItem>
             {categories.map((category) => (
-              <MenuItem key={category._id} value={category._id}>
+              <MenuItem
+                key={category._id}
+                value={category._id}
+                defaultValue={category.name}
+              >
                 {category.name}
               </MenuItem>
             ))}
