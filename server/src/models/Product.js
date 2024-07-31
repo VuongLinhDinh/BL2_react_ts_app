@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-const Schema = mongoose.Schema;
 
-const ProductSchema = new Schema(
+const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -12,28 +11,28 @@ const ProductSchema = new Schema(
       required: true
     },
     description: {
-      type: String,
-      required: true
-    },
-    images: {
-      type: String,
-      required: true
+      type: String
     },
     discount: {
       type: Number,
       default: 0
     },
-    rating: {
-      type: Number,
-      default: 4.5
-    },
     category: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Category"
     },
+    images: { type: String },
     isShow: {
       type: Boolean,
-      default: true
+      default: false
+    },
+    stock: {
+      type: Number,
+      default: 0
+    },
+    rating: {
+      type: Number,
+      default: 0
     }
   },
   {
@@ -42,6 +41,4 @@ const ProductSchema = new Schema(
   }
 );
 
-const Product = mongoose.model("Product", ProductSchema);
-
-export default Product;
+export default mongoose.model("Product", productSchema);

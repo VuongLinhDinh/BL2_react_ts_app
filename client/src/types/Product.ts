@@ -7,9 +7,15 @@ export interface ProductTs {
   images: string;
   discount: number;
   rating: number;
+  slug: string;
   category: {
     _id: number;
     name: string;
+    description: string;
+    isHidden: boolean;
+    slug: string;
+    createdAt: string;
+    updatedAt: string;
   };
   isShow: boolean;
 }

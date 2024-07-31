@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { useEffect, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
 import instance from "src/axious";
@@ -12,11 +13,13 @@ const useProduct = () => {
     const fetchProducts = async () => {
       try {
         const { data } = await instance.get("/products");
+        console.log(data.data);
 
-        dispatch({ type: "GET_PRODUCTS", payload: data });
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        nav("/404");
+        dispatch({ type: "GET_PRODUCTS", payload: data.data });
+      } catch (error: AxiosError | unknown) {
+        console.error(
+          (error as AxiosError)?.response?.data?.message || "An error occurred."
+        );
       }
     };
 

@@ -40,7 +40,7 @@ function ProductDetail() {
     try {
       setLoading(true);
       const { data } = await instance.get(`/products/${id}`);
-      setProduct(data);
+      setProduct(data.data);
     } catch (error) {
       setError("Failed to fetch product data. Please try again.");
       setNavigateAfterError(true);
@@ -250,7 +250,10 @@ function ProductDetail() {
                   >
                     Category :
                   </Typography>
-                  <Typography sx={{ fontSize: "14px" }}>Casual</Typography>
+                  <Typography sx={{ fontSize: "14px" }}>
+                    {" "}
+                    {product.category ? product.category.name : "No Category"}
+                  </Typography>
                 </Stack>
                 <Stack direction={"row"} gap={2}>
                   <Typography

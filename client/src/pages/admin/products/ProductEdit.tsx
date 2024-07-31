@@ -51,7 +51,7 @@ const ProductEdit = () => {
       setLoading(true);
       const { data } = await instance.get(`/products/${productId}`);
       console.log(data);
-      reset(data); // Reset form with fetched product data
+      reset(data.data); // Reset form with fetched product data
     } catch (error) {
       setError("Failed to fetch product details. Please try again.");
     } finally {
@@ -63,7 +63,7 @@ const ProductEdit = () => {
     try {
       setLoading(true);
       const { data } = await instance.get("/categories");
-      setCategories(data);
+      setCategories(data.data);
     } catch (error) {
       setError("Failed to fetch categories. Please try again.");
     } finally {
@@ -82,7 +82,7 @@ const ProductEdit = () => {
   const onSubmit: SubmitHandler<ProductFormInputs> = async (data) => {
     try {
       setLoading(true);
-      await instance.put(`/products/${id}`, data); // Update product with PUT request
+      await instance.patch(`/products/${id}`, data); // Update product with PUT request
       setSuccessMessage("Product updated successfully!");
       setTimeout(() => {
         navigate("/admin/product/list");

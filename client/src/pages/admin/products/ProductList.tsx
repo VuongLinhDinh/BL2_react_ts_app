@@ -19,7 +19,12 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-  Alert
+  Alert,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  TextField
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
@@ -36,6 +41,10 @@ const ProductList = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+
+  const [sortCriteria, setSortCriteria] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
     setLoading(true);
@@ -83,6 +92,65 @@ const ProductList = () => {
     setSuccess("Bạn đã xóa sản phẩm thành công!");
   };
 
+  const handleSortChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSortCriteria(event.target.value as string);
+  };
+
+  const handleCategoryFilterChange = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setCategoryFilter(event.target.value as string);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSearchTerm(event.target.value as string);
+  };
+
+  const getUniqueCategories = () => {
+    const categorySet = new Set(
+      state.products.map((product) => product.category?.name)
+    );
+    return Array.from(categorySet).filter((category) => category); // Filter out undefined categories
+  };
+
+  const getFilteredProducts = () => {
+    let filteredProducts = state.products;
+
+    if (categoryFilter) {
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.category && product.category.name === categoryFilter
+      );
+    }
+
+    if (searchTerm) {
+      filteredProducts = filteredProducts.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (sortCriteria) {
+      filteredProducts = filteredProducts.sort((a, b) => {
+        if (sortCriteria === "price_asc") {
+          return a.price - b.price;
+        } else if (sortCriteria === "price_desc") {
+          return b.price - a.price;
+        } else if (sortCriteria === "rating_asc") {
+          return a.rating - b.rating;
+        } else if (sortCriteria === "rating_desc") {
+          return b.rating - a.rating;
+        } else {
+          return 0;
+        }
+      });
+    }
+
+    return filteredProducts;
+  };
+
+  const uniqueCategories = getUniqueCategories();
+  const filteredProducts = getFilteredProducts();
+
   return (
     <Box>
       <Stack
@@ -98,6 +166,35 @@ const ProductList = () => {
           Add new product
         </Link>
       </Stack>
+      <Box sx={{ marginBottom: "20px" }}>
+        <FormControl sx={{ minWidth: 120, marginRight: "10px" }}>
+          <InputLabel>Sort by</InputLabel>
+          <Select value={sortCriteria} onChange={handleSortChange}>
+            <MenuItem value={"price_asc"}>Price: Low to High</MenuItem>
+            <MenuItem value={"price_desc"}>Price: High to Low</MenuItem>
+            <MenuItem value={"rating_asc"}>Rating: Low to High</MenuItem>
+            <MenuItem value={"rating_desc"}>Rating: High to Low</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 120, marginRight: "10px" }}>
+          <InputLabel>Category</InputLabel>
+          <Select value={categoryFilter} onChange={handleCategoryFilterChange}>
+            <MenuItem value={""}>All</MenuItem>
+            {uniqueCategories.map((category, index) => (
+              <MenuItem key={index} value={category}>
+                {category}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          label="Search"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          sx={{ minWidth: 200 }}
+        />
+      </Box>
       {loading ? (
         <CircularProgress />
       ) : (
@@ -118,7 +215,7 @@ const ProductList = () => {
               </TableRow>
             </TableHead>
             <TableBody sx={{ borderRadius: "10px" }}>
-              {state.products.map((product) => (
+              {filteredProducts.map((product) => (
                 <TableRow key={product._id}>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>
@@ -155,7 +252,9 @@ const ProductList = () => {
                       <StarBorderIcon />
                     </Stack>
                   </TableCell>
-                  <TableCell>{product.category.name}</TableCell>
+                  <TableCell>
+                    {product.category ? product.category.name : "No Category"}
+                  </TableCell>
                   <TableCell>
                     <Switch
                       checked={product.isShow}
