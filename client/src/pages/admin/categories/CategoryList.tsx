@@ -40,7 +40,7 @@ const CategoryList = () => {
     try {
       setLoading(true);
       const { data } = await instance.get("/categories");
-      setCategories(data);
+      setCategories(data.data);
     } catch (error) {
       setError("Failed to fetch products. Please try again.");
     } finally {

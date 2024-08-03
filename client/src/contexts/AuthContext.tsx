@@ -36,11 +36,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     setUser(user);
-    nav(user.role === "admin" ? "/admin" : "/");
+    nav("/product");
   };
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
     nav("/login");

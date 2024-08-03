@@ -10,10 +10,21 @@ import {
   Button,
   Menu,
   MenuItem,
-  TextField
+  TextField,
+  Drawer,
+  Badge,
+  IconButton,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
 import Box from "@mui/material/Box";
+import MenuIcon from "@mui/icons-material/Menu";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import HistoryIcon from "@mui/icons-material/History";
 import { Link } from "react-router-dom";
+import CartTemp from "./CartTemp";
+import { useCart } from "src/hooks/useCart";
+import { useAuth } from "src/contexts/AuthContext";
 
 const menus = [
   { label: "Home", link: "/" },
@@ -23,20 +34,18 @@ const menus = [
 ];
 
 function Header() {
+  const { getCartItemCount } = useCart();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
-  const [openSearch, setOpenSearch] = useState(false); // Thêm trạng thái cho hộp tìm kiếm
+
+  const [openSearch, setOpenSearch] = useState(false);
   const [anchorEl, setAnchorEl] = useState<
     (EventTarget & HTMLImageElement) | null
   >(null);
-  const isLogin = !!localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-  // handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.reload();
-  };
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpenCart, setDrawerOpenCart] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -53,6 +62,13 @@ function Header() {
   const handleCloseSearch = () => {
     setOpenSearch(false);
   };
+  const handleDrawerOpenCart = () => {
+    setDrawerOpenCart(true);
+  };
+
+  const handleDrawerCloseCart = () => {
+    setDrawerOpenCart(false);
+  };
 
   const handleMenuClick = (event: React.MouseEvent<HTMLImageElement>) => {
     setAnchorEl(event.currentTarget);
@@ -62,39 +78,40 @@ function Header() {
     setAnchorEl(null);
   };
 
+  const handleDrawerOpen = () => {
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+
   return (
     <Stack
       direction={"row"}
       alignItems={"center"}
-      justifyContent={"space-around"}
+      justifyContent={"space-between"}
+      padding={"0 20px"}
     >
-      <Stack
-        direction={"row"}
-        alignItems={"center"}
-        justifyContent={"space-around"}
-        gap={1}
-      >
-        <img src="./logo.svg" alt="logo" />
-        <Box fontSize={34} fontWeight={600}>
-          Furniro
-        </Box>
-      </Stack>
-      <Stack
-        direction={"row"}
-        alignItems={"center"}
-        justifyContent={"space-around"}
-        gap={"50px"}
-        height={"100px"}
-      >
-        {menus.map((menu, index) => (
-          <Link key={index} to={menu.link}>
-            <Typography key={index} sx={{ color: "black" }}>
-              {menu.label}
-            </Typography>
-          </Link>
-        ))}
-      </Stack>
-      {isLogin ? (
+      <Box>
+        <img src="./nike.png" alt="logo" style={{ width: "100px" }} />
+      </Box>
+      {isMobile ? (
+        <IconButton onClick={handleDrawerOpen}>
+          <MenuIcon />
+        </IconButton>
+      ) : (
+        <Stack direction={"row"} alignItems={"center"} gap={"50px"}>
+          {menus.map((menu, index) => (
+            <Link key={index} to={menu.link}>
+              <Typography key={index} sx={{ color: "black" }}>
+                {menu.label}
+              </Typography>
+            </Link>
+          ))}
+        </Stack>
+      )}
+      {user ? (
         <Stack
           direction={"row"}
           alignItems={"center"}
@@ -113,24 +130,45 @@ function Header() {
             onClose={handleMenuClose}
           >
             <MenuItem>hi, {user.email}</MenuItem>
-            <MenuItem>Edit Profile</MenuItem>
+            <MenuItem>
+              <AccountCircleIcon sx={{ marginRight: "2px" }} /> Edit Profile
+            </MenuItem>
+            <MenuItem>
+              <Link
+                to={"/history"}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  color: "black"
+                }}
+              >
+                <HistoryIcon sx={{ marginRight: "2px" }} /> History Order
+              </Link>
+            </MenuItem>
           </Menu>
           <img
             src="/search.svg"
             alt="search"
             style={{ width: "25px", height: "25px", cursor: "pointer" }}
-            onClick={handleClickOpenSearch} // Thêm sự kiện onClick để mở hộp tìm kiếm
+            onClick={handleClickOpenSearch}
           />
-          <img
-            src="/heart.svg"
-            alt="heart"
-            style={{ width: "25px", height: "25px" }}
-          />
-          <img
-            src="/cart.svg"
-            alt="cart"
-            style={{ width: "25px", height: "25px" }}
-          />
+          <Link to={"/wishlist"}>
+            <img
+              src="/heart.svg"
+              alt="heart"
+              style={{ width: "25px", height: "25px" }}
+            />
+          </Link>
+
+          <Badge badgeContent={getCartItemCount()} color="secondary">
+            <img
+              src="/cart.svg"
+              alt="cart"
+              style={{ width: "25px", height: "25px", cursor: "pointer" }}
+              onClick={handleDrawerOpenCart}
+            />
+          </Badge>
           <img
             onClick={handleClickOpen}
             src="/logout.svg"
@@ -186,7 +224,7 @@ function Header() {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleLogout} color="primary" autoFocus>
+          <Button onClick={logout} color="primary" autoFocus>
             Logout
           </Button>
         </DialogActions>
@@ -221,6 +259,59 @@ function Header() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Drawer
+        anchor="right"
+        open={drawerOpenCart}
+        onClose={handleDrawerCloseCart}
+      >
+        <Box sx={{ width: 350, padding: 2 }} role="presentation">
+          <CartTemp close={handleDrawerCloseCart} />
+        </Box>
+      </Drawer>
+
+      <Drawer anchor="left" open={drawerOpen} onClose={handleDrawerClose}>
+        <Box sx={{ width: 250, padding: 2 }} role="presentation">
+          <Stack direction={"column"} gap={2}>
+            {menus.map((menu, index) => (
+              <Link key={index} to={menu.link}>
+                <Typography key={index} sx={{ color: "black" }}>
+                  {menu.label}
+                </Typography>
+              </Link>
+            ))}
+            {user ? (
+              <>
+                <Typography>Hi, {user.email}</Typography>
+                <MenuItem>Edit Profile</MenuItem>
+              </>
+            ) : (
+              <Stack gap={2}>
+                <Box
+                  borderRadius={10}
+                  bgcolor={"#000000cf"}
+                  padding={"5px 20px"}
+                  color={"#fff"}
+                >
+                  <Link to="/login" style={{ color: "#fff" }}>
+                    Login
+                  </Link>
+                </Box>
+                <Box
+                  borderRadius={10}
+                  bgcolor={"#000000cf"}
+                  padding={"5px 20px"}
+                  color={"#fff"}
+                >
+                  <Link to="/register" style={{ color: "#fff" }}>
+                    Register
+                  </Link>
+                </Box>
+              </Stack>
+            )}
+          </Stack>
+        </Box>
+      </Drawer>
     </Stack>
   );
 }

@@ -14,12 +14,15 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "src/axious";
 import { useAuth } from "src/contexts/AuthContext";
+import { AxiosError } from "axios";
 
 type LoginFormParams = {
   email: string;
   password: string;
 };
-
+interface ErrorResponse {
+  message?: string;
+}
 const Login = () => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -34,8 +37,8 @@ const Login = () => {
   const { login } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const user = localStorage.getItem("user");
+    if (user) {
       setSuccessMessage("Bạn đã đăng nhập!");
       setTimeout(() => {
         navigate("/product");
@@ -57,10 +60,11 @@ const Login = () => {
       setTimeout(() => {
         navigate("/product");
       }, 2000); // Chuyển hướng sau 2 giây
-    } catch (error: any) {
-      if (error.response && error.response.data) {
+    } catch (error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      if (axiosError.response && axiosError.response.data) {
         const errorMsg =
-          error.response.data.message ||
+          axiosError.response.data.message ||
           "Đăng nhập thất bại. Vui lòng thử lại.";
         if (errorMsg.includes("email")) {
           setEmailError(errorMsg);
@@ -74,7 +78,7 @@ const Login = () => {
       } else {
         setGeneralError("Đăng nhập thất bại. Vui lòng thử lại.");
       }
-      console.error("Chi tiết lỗi:", error);
+      console.error("Chi tiết lỗi:", axiosError);
     }
   };
 

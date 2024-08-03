@@ -22,6 +22,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Category } from "src/types/Category"; // Assume this type is defined
 import instance from "src/axious";
 import { productSchema } from "src/untils/validation";
+import axios from "axios";
 
 type ProductFormInputs = z.infer<typeof productSchema>;
 
@@ -42,7 +43,7 @@ const ProductEdit = () => {
   } = useForm<ProductFormInputs>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      category: "" // Provide a default value for category
+      category: ""
     }
   });
 
@@ -51,9 +52,13 @@ const ProductEdit = () => {
       setLoading(true);
       const { data } = await instance.get(`/products/${productId}`);
       console.log(data);
-      reset(data); // Reset form with fetched product data
+      reset(data.data);
     } catch (error) {
-      setError("Failed to fetch product details. Please try again.");
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || "Failed to edit product");
+      } else {
+        setError("Failed to edit product. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +68,7 @@ const ProductEdit = () => {
     try {
       setLoading(true);
       const { data } = await instance.get("/categories");
-      setCategories(data);
+      setCategories(data.data);
     } catch (error) {
       setError("Failed to fetch categories. Please try again.");
     } finally {
@@ -82,7 +87,7 @@ const ProductEdit = () => {
   const onSubmit: SubmitHandler<ProductFormInputs> = async (data) => {
     try {
       setLoading(true);
-      await instance.put(`/products/${id}`, data); // Update product with PUT request
+      await instance.patch(`/products/${id}`, data); // Update product with PUT request
       setSuccessMessage("Product updated successfully!");
       setTimeout(() => {
         navigate("/admin/product/list");

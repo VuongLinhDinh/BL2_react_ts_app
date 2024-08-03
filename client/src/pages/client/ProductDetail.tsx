@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
 import {
   Box,
   Button,
@@ -8,48 +10,64 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
   Stack,
-  TextField,
+  Tab,
   Typography
 } from "@mui/material";
 import Rating from "@mui/material/Rating";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import instance from "src/axious";
 import Loading from "src/components/Loading";
+
 import { useLoading } from "src/contexts/loading";
 import { ProductTs } from "src/types/Product";
+import axios from "axios";
+import { useCart } from "src/hooks/useCart";
 
 function ProductDetail() {
   const { id } = useParams();
   const { setLoading } = useLoading();
+  const { addToCart } = useCart(); // Lấy hàm addToCart từ CartContext
   const [product, setProduct] = useState<ProductTs | undefined>();
   const [quantity, setQuantity] = useState<number>(1);
+  const [tab, setTab] = useState("desc");
   const [error, setError] = useState<string | null>(null);
   const [navigateAfterError, setNavigateAfterError] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const getProduct = async (id: string) => {
-    try {
-      setLoading(true);
-      const { data } = await instance.get(`/products/${id}`);
-      setProduct(data);
-    } catch (error) {
-      setError("Failed to fetch product data. Please try again.");
-      setNavigateAfterError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const getProduct = useCallback(
+    async (id: string) => {
+      try {
+        setLoading(true);
+        const { data } = await instance.get(`/products/${id}`);
+        setProduct(data.data);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          setError(
+            error.response?.data?.message || "Failed to fetch product data"
+          );
+        } else {
+          setError("Failed to fetch product data. Please try again.");
+        }
+
+        setNavigateAfterError(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setLoading, setProduct, setError, setNavigateAfterError]
+  );
 
   useEffect(() => {
-    if (!id) return;
-    getProduct(id);
-  }, [id]);
+    if (id) {
+      getProduct(id);
+    }
+  }, [id, getProduct]);
 
   const handleIncreaseQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
@@ -59,8 +77,26 @@ function ProductDetail() {
     setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
 
+  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
+    setTab(newValue);
+  };
+
+  const QuantitySelector = () => (
+    <Button variant="outlined" sx={{ display: "flex", borderRadius: "15px" }}>
+      <IconButton onClick={handleDecreaseQuantity} aria-label="decrease">
+        <RemoveIcon color="primary" />
+      </IconButton>
+      <Typography>{quantity}</Typography>
+      <IconButton onClick={handleIncreaseQuantity} aria-label="increase">
+        <AddIcon color="primary" />
+      </IconButton>
+    </Button>
+  );
+
   const handleAddToCart = () => {
-    console.log(`Added ${quantity} of ${product?.name} to cart`);
+    if (product) {
+      addToCart(product, quantity);
+    }
   };
 
   const handleCloseError = () => {
@@ -112,41 +148,11 @@ function ProductDetail() {
         {product && (
           <Stack direction={"row"} gap={7} p={5}>
             <Stack direction={"row"} gap={4}>
-              <Stack direction={"column"} gap={3}>
-                <img
-                  src={product.images}
-                  alt=""
-                  width={"100px"}
-                  height={"100px"}
-                  style={{ borderRadius: "10px" }}
-                />
-                <img
-                  src={product.images}
-                  alt=""
-                  width={"100px"}
-                  height={"100px"}
-                  style={{ borderRadius: "10px" }}
-                />
-                <img
-                  src={product.images}
-                  alt=""
-                  width={"100px"}
-                  height={"100px"}
-                  style={{ borderRadius: "10px" }}
-                />
-                <img
-                  src={product.images}
-                  alt=""
-                  width={"100px"}
-                  height={"100px"}
-                  style={{ borderRadius: "10px" }}
-                />
-              </Stack>
-
               <img
                 src={product.images}
                 alt=""
-                width={"423px"}
+                width={"340px"}
+                height={"550px"}
                 style={{ borderRadius: "10px" }}
               />
             </Stack>
@@ -163,7 +169,11 @@ function ProductDetail() {
                   marginBottom: "5px"
                 }}
               >
-                {product.price.toLocaleString()}đ
+                {(
+                  product.price -
+                  product.price * (product.discount / 100)
+                ).toLocaleString()}
+                đ
               </Typography>
               <Rating
                 name="half-rating-read"
@@ -172,57 +182,131 @@ function ProductDetail() {
                 sx={{ fontSize: 20, marginY: "5px" }}
                 readOnly
               />
-              <Typography sx={{ fontSize: "13px", width: "424px" }}>
+              <Typography
+                sx={{ fontSize: "13px", width: "424px", marginBottom: "15px" }}
+              >
                 {product.description}
               </Typography>
-              <Stack
-                direction="row"
-                alignItems="center"
-                gap={1}
-                p={2}
-                bgcolor={"#ccc"}
-                border={"1px solid #816DFA"}
-              >
-                <IconButton
-                  onClick={handleDecreaseQuantity}
-                  aria-label="decrease"
+              <Stack direction={"row"} spacing={2} marginBottom={"30px"}>
+                <QuantitySelector />
+                <Button
+                  variant="outlined"
+                  sx={{ borderRadius: "15px" }}
+                  onClick={handleAddToCart} // Thêm vào giỏ hàng
                 >
-                  <RemoveIcon />
-                </IconButton>
-                <TextField
-                  value={quantity}
-                  inputProps={{ readOnly: true }}
-                  size="small"
+                  Add to Cart
+                </Button>
+                <Button
+                  variant="outlined"
                   sx={{
-                    width: 50,
-                    textAlign: "center",
-                    outline: "none",
-                    boder: "none"
+                    borderRadius: "15px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
                   }}
-                />
-                <IconButton
-                  onClick={handleIncreaseQuantity}
-                  aria-label="increase"
                 >
-                  <AddIcon />
-                </IconButton>
+                  <AddIcon sx={{ fontSize: "23px", fontWeight: "400" }} />
+                  Compare
+                </Button>
               </Stack>
-              <Button variant="contained" onClick={handleAddToCart}>
-                Add to Cart
-              </Button>
+              <Divider
+                sx={{ borderBottomWidth: "2px", marginBottom: "10px" }}
+              />
+              <Stack direction={"column"} spacing={2}>
+                <Typography
+                  fontWeight={"700"}
+                  sx={{
+                    color: "#9F9F9F",
+                    fontSize: "14px",
+                    marginBottom: "10px"
+                  }}
+                >
+                  Brand:{" "}
+                  <Typography
+                    component="span"
+                    fontWeight={"400"}
+                    sx={{
+                      color: "#000",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Nike
+                  </Typography>
+                </Typography>
+                <Typography
+                  fontWeight={"700"}
+                  sx={{
+                    color: "#9F9F9F",
+                    fontSize: "14px",
+                    marginBottom: "10px"
+                  }}
+                >
+                  Category:{" "}
+                  <Typography
+                    component="span"
+                    fontWeight={"400"}
+                    sx={{
+                      color: "#000",
+                      fontSize: "14px"
+                    }}
+                  >
+                    {product.category.name}
+                  </Typography>
+                </Typography>
+                <Typography
+                  fontWeight={"700"}
+                  sx={{
+                    color: "#9F9F9F",
+                    fontSize: "14px",
+                    marginBottom: "10px"
+                  }}
+                >
+                  Tags: #sneakers, #nike, #shoes
+                </Typography>
+              </Stack>
             </Stack>
           </Stack>
         )}
       </Container>
-      <Dialog open={!!error} onClose={handleCloseError}>
-        <DialogTitle>Error</DialogTitle>
-        <DialogContent>
-          <Typography>{error}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseError}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      <Stack justifyContent={"center"}>
+        <TabContext value={tab}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <TabList
+              onChange={handleChange}
+              aria-label="lab API tabs example"
+              variant="scrollable"
+              scrollButtons
+            >
+              <Tab label="Description" value="desc" />
+              <Tab label="Additional Information" value="2" />
+              <Tab label="Reviews [5]" value="3" />
+            </TabList>
+          </Box>
+          <TabPanel value="desc">...</TabPanel>
+          <TabPanel value="2">...</TabPanel>
+          <TabPanel value="3">...</TabPanel>
+        </TabContext>
+      </Stack>
+      {error && (
+        <Dialog
+          open={Boolean(error)}
+          onClose={handleCloseError}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Error"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              {error}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseError} color="primary" autoFocus>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
 }

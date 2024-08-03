@@ -51,7 +51,6 @@ const CategoryForm = () => {
           nav("/admin/category/list");
         }, 1000);
       }
-      reset();
     } catch (error) {
       setError("Failed to submit the category. Please try again.");
     } finally {
@@ -65,7 +64,7 @@ const CategoryForm = () => {
         setLoading(true);
         try {
           const { data } = await instance.get(`/categories/${id}`);
-          reset(data);
+          reset(data.data);
         } catch (error) {
           setError("Failed to fetch category details. Please try again.");
         } finally {

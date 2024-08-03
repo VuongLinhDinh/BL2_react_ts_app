@@ -6,15 +6,18 @@ import { BrowserRouter } from "react-router-dom";
 import { LoadingProvider } from "./contexts/loading.tsx";
 import ProductProvider from "./contexts/ProductContext.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
+import { CartProvider } from "./contexts/CardContext.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <LoadingProvider>
         <AuthProvider>
-          <ProductProvider>
-            <App />
-          </ProductProvider>
+          <CartProvider>
+            <ProductProvider>
+              <App />
+            </ProductProvider>
+          </CartProvider>
         </AuthProvider>
       </LoadingProvider>
     </BrowserRouter>
