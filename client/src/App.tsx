@@ -15,6 +15,10 @@ import PrivateRoute from "./pages/PrivateRouter";
 import Register from "./pages/Register";
 import StepProviderWrapper from "./pages/StepProviderWrapper";
 import CategoryForm from "./pages/admin/categories/CategoryForm";
+import Cart from "./pages/Cart";
+import Order from "./pages/Order";
+import OrderHistory from "./pages/OderHistory";
+import FavoriteList from "./pages/FavoriteList";
 
 const routeConfig = [
   {
@@ -80,6 +84,22 @@ const routeConfig = [
       {
         path: "step",
         element: <StepProviderWrapper />
+      },
+      {
+        path: "cart",
+        element: <Cart />
+      },
+      {
+        path: "order",
+        element: <Order />
+      },
+      {
+        path: "history",
+        element: <OrderHistory />
+      },
+      {
+        path: "wishlist",
+        element: <FavoriteList />
       }
     ]
   },

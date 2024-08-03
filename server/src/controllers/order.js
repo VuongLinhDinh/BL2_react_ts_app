@@ -1,19 +1,17 @@
-import mongoose from "mongoose";
+// controllers/orderController.js
+import Order from "../models/Order.js";
 
-const orderSchema = new mongoose.Schema(
-	{
-		user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-		products: [
-			{
-				product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-				quantity: { type: Number, required: true },
-			},
-		],
-		totalPrice: { type: Number, required: true },
-	},
-	{ timestamps: true, versionKey: false }
-);
+export const getOrderHistory = async (req, res, next) => {
+  try {
+    const userId = req.userId; // Lấy userId từ middleware checkAuth
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
 
-const Order = mongoose.model("Order", orderSchema);
+    if (!orders.length) {
+      return res.status(404).json({ message: "No orders found" });
+    }
 
-export default Order;
+    return res.status(200).json({ orders });
+  } catch (error) {
+    next(error);
+  }
+};

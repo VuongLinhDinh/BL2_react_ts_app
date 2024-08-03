@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { createProduct, deleteProduct, getAllProduct, getProductById, updateProduct } from "../controllers/product.js";
+import {
+  createProduct,
+  deleteProduct,
+  getAllProduct,
+  getProductById,
+  updateProduct
+} from "../controllers/product.js";
 import { checkIsAdmin } from "../middlewares/checkIsAdmin.js";
 import { validBodyRequest } from "../middlewares/validBodyRequest.js";
 import { checkAuth } from "../middlewares/checkAuth.js";

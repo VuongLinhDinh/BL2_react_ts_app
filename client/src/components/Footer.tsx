@@ -141,7 +141,7 @@ const Footer = () => {
           <Grid container spacing={4}>
             <Grid item xs={12} sm={4}>
               <Typography variant="h6" gutterBottom>
-                Funiro.
+                <img src="./nike.png" alt="" style={{ width: "100px" }} />
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 400 University Drive Suite 202 Coral Gables, FL 33134 USA

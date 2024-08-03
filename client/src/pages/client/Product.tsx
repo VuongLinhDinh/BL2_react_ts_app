@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -14,11 +14,13 @@ import {
   Select,
   MenuItem,
   TextField,
-  CircularProgress
+  CircularProgress,
+  SelectChangeEvent
 } from "@mui/material";
-import { AxiosError } from "axios";
-
-import { useEffect, useState } from "react";
+import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
+import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import instance from "src/axious";
 import Loading from "src/components/Loading";
@@ -36,14 +38,13 @@ function Product() {
   const [sortCriteria, setSortCriteria] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filterVisible, setFilterVisible] = useState<boolean>(false); // State to control filter visibility
 
-  const handleSortChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleSortChange = (event: SelectChangeEvent<string>) => {
     setSortCriteria(event.target.value as string);
   };
 
-  const handleCategoryFilterChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
+  const handleCategoryFilterChange = (event: SelectChangeEvent<string>) => {
     setCategoryFilter(event.target.value as string);
   };
 
@@ -51,21 +52,25 @@ function Product() {
     setSearchTerm(event.target.value as string);
   };
 
-  const getAllProduct = async () => {
+  const getAllProduct = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await instance.get("/products");
       setProducts(data.data);
-    } catch (error: AxiosError | unknown) {
-      setError((error as AxiosError).response?.data.message);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || "An error occurred");
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading]);
 
   useEffect(() => {
     getAllProduct();
-  }, []);
+  }, [getAllProduct]);
 
   const getUniqueCategories = () => {
     const categorySet = new Set(
@@ -129,59 +134,97 @@ function Product() {
   return (
     <>
       <Loading />
-      <Stack
-        direction={"row"}
-        gap={2}
-        alignItems={"center"}
-        justifyContent={"start"}
-        sx={{ margin: "20px 185px 30px" }}
-      >
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel>Sort by</InputLabel>
-          <Select value={sortCriteria} onChange={handleSortChange}>
-            <MenuItem value={"price_asc"}>Price: Low to High</MenuItem>
-            <MenuItem value={"price_desc"}>Price: High to Low</MenuItem>
-            <MenuItem value={"rating_asc"}>Rating: Low to High</MenuItem>
-            <MenuItem value={"rating_desc"}>Rating: High to Low</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel>Category</InputLabel>
-          <Select value={categoryFilter} onChange={handleCategoryFilterChange}>
-            <MenuItem value={""}>All</MenuItem>
-            {uniqueCategories.map((category, index) => (
-              <MenuItem key={index} value={category}>
-                {category}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label="Search"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          sx={{ minWidth: 200 }}
-        />
+      <Stack direction={"column"}>
+        <Collapse in={filterVisible} timeout="auto" unmountOnExit>
+          <Stack
+            direction={"column"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            gap={2}
+            margin={"20px"}
+            flexWrap={"wrap"}
+          >
+            <TextField
+              label="Search"
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              sx={{ minWidth: 200, width: "77%" }}
+            />
+            <Stack
+              direction={"row"}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+              gap={2}
+              width={"77%"}
+            >
+              <FormControl sx={{ minWidth: 120, width: "50%" }}>
+                <InputLabel>Sort by</InputLabel>
+                <Select value={sortCriteria} onChange={handleSortChange}>
+                  <MenuItem value={"price_asc"}>Price: Low to High</MenuItem>
+                  <MenuItem value={"price_desc"}>Price: High to Low</MenuItem>
+                  <MenuItem value={"rating_asc"}>Rating: Low to High</MenuItem>
+                  <MenuItem value={"rating_desc"}>Rating: High to Low</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl sx={{ minWidth: 120, width: "50%" }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={categoryFilter}
+                  onChange={handleCategoryFilterChange}
+                >
+                  <MenuItem value={""}>All</MenuItem>
+                  {uniqueCategories.map((category, index) => (
+                    <MenuItem key={index} value={category}>
+                      {category}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+
+            <Button
+              onClick={() => setFilterVisible(false)} // Hide the filter section
+            >
+              <KeyboardDoubleArrowDownIcon sx={{ color: "#D9D9D9" }} />
+            </Button>
+          </Stack>
+        </Collapse>
+        <Stack
+          direction={"column"}
+          alignItems={"center"}
+          justifyContent={"center"}
+        >
+          {!filterVisible && ( // Conditionally render the "Display Filter" button
+            <Button
+              sx={{ margin: "5px", color: "#b4b4b4" }}
+              onClick={() => setFilterVisible(true)}
+            >
+              <KeyboardDoubleArrowUpIcon sx={{ marginRight: "2px" }} /> Display
+              Filter
+            </Button>
+          )}
+          <Stack
+            direction={"row"}
+            flexWrap={"wrap"}
+            gap={2}
+            alignItems={"start"}
+            justifyContent={"center"}
+          >
+            {filteredProducts.length === 0 ? (
+              <CircularProgress />
+            ) : (
+              filteredProducts.map((product: ProductTs, index: number) => (
+                <Item key={index}>
+                  <ProductCard product={product} />
+                </Item>
+              ))
+            )}
+          </Stack>
+        </Stack>
       </Stack>
-      <Stack
-        direction={"row"}
-        flexWrap={"wrap"}
-        gap={2}
-        alignItems={"start"}
-        justifyContent={"center"}
-        sx={{ margin: "20px 0 30px" }}
-      >
-        {filteredProducts.length === 0 ? (
-          <CircularProgress />
-        ) : (
-          filteredProducts.map((product: ProductTs, index: number) => (
-            <Item key={index}>
-              <ProductCard product={product} />
-            </Item>
-          ))
-        )}
-      </Stack>
+
       <Dialog open={!!error} onClose={handleCloseError}>
         <DialogTitle>Error</DialogTitle>
         <DialogContent>

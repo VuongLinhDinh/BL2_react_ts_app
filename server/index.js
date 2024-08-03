@@ -19,6 +19,14 @@ connectdb(DB_URI || "mongodb://localhost:27017/myshop");
 
 app.use("/api", router);
 
+// app.use((req, res, next) => {
+//   res.status(404).json({ message: "Not found" });
+// });
+app.use((req, res, next) => {
+  console.log(`Requested URL: ${req.url}`);
+  next();
+});
+
 // Error handler
 app.use(errorNotFound, errorCommon);
 

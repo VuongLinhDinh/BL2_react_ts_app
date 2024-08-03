@@ -1,5 +1,6 @@
 import { errorMessages, successMessages } from "../constants/message.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 
 export const getAllProduct = async (req, res, next) => {
   try {
@@ -113,6 +114,85 @@ export const updateProduct = async (req, res, next) => {
     return res.status(200).json({
       message: successMessages?.UPDATE_SUCCESS || "Cap nhat thanh cong!",
       data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Add a product to favorites
+export const addFavorite = async (req, res, next) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.userId; // Assuming you have user authentication
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.favorites.includes(userId)) {
+      return res.status(400).json({ message: "Product already in favorites" });
+    }
+
+    product.favorites.push(userId);
+    await product.save();
+
+    const user = await User.findById(userId);
+    user.favorites.push(productId);
+    await user.save();
+
+    return res.status(200).json({
+      message: "Added to favorites successfully!",
+      data: product
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Remove a product from favorites
+export const removeFavorite = async (req, res, next) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.userId; // Assuming you have user authentication
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    product.favorites = product.favorites.filter(
+      (favorite) => !favorite.equals(userId)
+    );
+    await product.save();
+
+    const user = await User.findById(userId);
+    user.favorites = user.favorites.filter(
+      (favorite) => !favorite.equals(productId)
+    );
+    await user.save();
+
+    return res.status(200).json({
+      message: "Removed from favorites successfully!",
+      data: product
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get favorite products for a user
+export const getFavorites = async (req, res, next) => {
+  try {
+    const userId = req.userId; // Assuming you have user authentication
+    const products = await Product.find({ favorites: userId }).populate(
+      "category"
+    );
+
+    return res.status(200).json({
+      message: "Favorite products retrieved successfully!",
+      data: products
     });
   } catch (error) {
     next(error);

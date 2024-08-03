@@ -24,8 +24,10 @@ import {
   Select,
   InputLabel,
   FormControl,
-  TextField
+  TextField,
+  Pagination
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -45,6 +47,10 @@ const ProductList = () => {
   const [sortCriteria, setSortCriteria] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // Pagination states
+  const [page, setPage] = useState<number>(1);
+  const [rowsPerPage] = useState<number>(5);
 
   useEffect(() => {
     setLoading(true);
@@ -92,18 +98,20 @@ const ProductList = () => {
     setSuccess("Bạn đã xóa sản phẩm thành công!");
   };
 
-  const handleSortChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleSortChange = (event: SelectChangeEvent<string>) => {
     setSortCriteria(event.target.value as string);
   };
 
-  const handleCategoryFilterChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
+  const handleCategoryFilterChange = (event: SelectChangeEvent<string>) => {
     setCategoryFilter(event.target.value as string);
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setSearchTerm(event.target.value as string);
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleChangePage = (_: React.ChangeEvent<unknown>, newPage: number) => {
+    setPage(newPage);
   };
 
   const getUniqueCategories = () => {
@@ -150,6 +158,11 @@ const ProductList = () => {
 
   const uniqueCategories = getUniqueCategories();
   const filteredProducts = getFilteredProducts();
+  const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   return (
     <Box>
@@ -198,97 +211,115 @@ const ProductList = () => {
       {loading ? (
         <CircularProgress />
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Discount</TableCell>
-                <TableCell>Price After Discount</TableCell>
-                <TableCell>Rating</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Is Show</TableCell>
-                <TableCell>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody sx={{ borderRadius: "10px" }}>
-              {filteredProducts.map((product) => (
-                <TableRow key={product._id}>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>
-                    <img
-                      src={product.images}
-                      alt={product.name}
-                      width="80"
-                      height="100"
-                      style={{ borderRadius: "5px" }}
-                    />
-                  </TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.price.toLocaleString()}</TableCell>
-                  <TableCell sx={{ textAlign: "center" }}>
-                    {product.discount} %
-                  </TableCell>
-                  <TableCell>
-                    {(
-                      product.price -
-                      product.price * (product.discount / 100)
-                    ).toLocaleString()}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      textAlign: "center"
-                    }}
-                  >
-                    <Stack
-                      direction={"row"}
-                      alignItems={"center"}
-                      justifyContent={"start"}
-                    >
-                      <Box> {product.rating}</Box>
-                      <StarBorderIcon />
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    {product.category ? product.category.name : "No Category"}
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={product.isShow}
-                      onChange={() => handleToggleShow(product._id.toString())}
-                      color="primary"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <IconButton
-                      sx={{ color: "#219C90" }}
-                      onClick={() => alert("View: " + product._id)}
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton sx={{ color: "#e3b309" }}>
-                      <Link
-                        style={{ color: "#e3b309" }}
-                        to={`/admin/product/edit/${product._id}`}
-                      >
-                        <EditIcon />
-                      </Link>
-                    </IconButton>
-                    <IconButton
-                      sx={{ color: "#EE4E4E" }}
-                      onClick={() => handleOpenDialog(product._id.toString())}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+        <>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Image</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Discount</TableCell>
+                  <TableCell>Price After Discount</TableCell>
+                  <TableCell>Rating</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Is Show</TableCell>
+                  <TableCell>Action</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody sx={{ borderRadius: "10px" }}>
+                {paginatedProducts.map((product) => (
+                  <TableRow key={product._id}>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>
+                      <img
+                        src={product.images}
+                        alt={product.name}
+                        width="80"
+                        height="100"
+                        style={{ borderRadius: "5px" }}
+                      />
+                    </TableCell>
+                    <TableCell>{product.description}</TableCell>
+                    <TableCell>{product.price.toLocaleString()}</TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
+                      {product.discount} %
+                    </TableCell>
+                    <TableCell>
+                      {(
+                        product.price -
+                        product.price * (product.discount / 100)
+                      ).toLocaleString()}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        textAlign: "center"
+                      }}
+                    >
+                      <Stack
+                        direction={"row"}
+                        alignItems={"center"}
+                        justifyContent={"start"}
+                      >
+                        <Box> {product.rating}</Box>
+                        <StarBorderIcon />
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      {product.category ? product.category.name : "No Category"}
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={product.isShow}
+                        onChange={() =>
+                          handleToggleShow(product._id.toString())
+                        }
+                        color="primary"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <IconButton
+                        sx={{ color: "#219C90" }}
+                        onClick={() => alert("View: " + product._id)}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                      <IconButton sx={{ color: "#e3b309" }}>
+                        <Link
+                          style={{ color: "#e3b309" }}
+                          to={`/admin/product/edit/${product._id}`}
+                        >
+                          <EditIcon />
+                        </Link>
+                      </IconButton>
+                      <IconButton
+                        sx={{ color: "#EE4E4E" }}
+                        onClick={() => handleOpenDialog(product._id.toString())}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "20px"
+            }}
+          >
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handleChangePage}
+              color="primary"
+            />
+          </Box>
+        </>
       )}
       <Snackbar
         open={!!error}

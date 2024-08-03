@@ -15,3 +15,15 @@ export const categorySchema = z.object({
   name: z.string().min(6),
   description: z.string().optional()
 });
+
+// src/validation/orderSchema.ts
+
+export const orderSchema = z.object({
+  name: z.string().nonempty("Name is required"),
+  phone: z.string().nonempty("Phone is required"),
+  email: z.string().email("Invalid email").nonempty("Email is required"),
+  country: z.string().nonempty("Country is required"),
+  address: z.string().nonempty("Address is required")
+});
+
+export type OrderFormData = z.infer<typeof orderSchema>;
