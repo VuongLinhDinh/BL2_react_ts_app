@@ -1,35 +1,9 @@
-import { useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CardMedia,
-  Stack
-} from "@mui/material";
-import { styled } from "@mui/system";
-import { ProductTs } from "src/types/Product"; // Ensure you have a ProductTs type
-import instance from "src/axious";
-// Adjust the import path as needed
+import { Box, Stack, Typography } from "@mui/material";
 
-const HoverBox = styled(Box)({
-  position: "absolute",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: "100%",
-  backgroundColor: "rgba(0, 0, 0, 0.5)",
-  color: "white",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
-  opacity: 0,
-  transition: "opacity 0.3s",
-  "&:hover": {
-    opacity: 1
-  }
-});
+import { useEffect, useState } from "react";
+import instance from "src/axious";
+import ProductCard from "src/components/ProductCard";
+import { ProductTs } from "src/types/Product"; // Ensure you have a ProductTs type
 
 const FavoriteList = () => {
   const [favorites, setFavorites] = useState<ProductTs[]>([]);
@@ -50,6 +24,15 @@ const FavoriteList = () => {
     fetchFavorites();
   }, []);
 
+  const removeFromFavorites = async (productId: string | number) => {
+    try {
+      await instance.delete(`/favorites/${productId}/remove`);
+      setFavorites(favorites.filter((product) => product._id !== productId));
+    } catch (error) {
+      console.error("Error removing favorite product:", error);
+    }
+  };
+
   if (isLoading) {
     return <Typography>Loading...</Typography>;
   }
@@ -61,117 +44,16 @@ const FavoriteList = () => {
         spacing={3}
         flexWrap="wrap"
         justifyContent="center"
-        alignItems="center"
+        alignItems="flex-start"
       >
-        {favorites.map((product) => {
-          const price = Number(product.price) || 0;
-          const discount = Number(product.discount) || 0;
-          const discountedPrice = price - price * (discount / 100);
-
-          return (
-            <Box
-              key={product._id}
-              sx={{
-                width: { xs: "100%", sm: "48%", md: "30%", lg: "22%" },
-                mb: 2
-              }}
-            >
-              <Card sx={{ position: "relative" }}>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: "0",
-                    right: "0",
-                    padding: "15px 10px",
-                    m: "5px",
-                    borderRadius: "50%",
-                    backgroundColor: discount === 0 ? "#2EC1AC" : "#E97171",
-                    color: "#fff"
-                  }}
-                >
-                  {discount === 0 ? "New" : `-${discount}%`}
-                </Box>
-                <CardMedia
-                  component="img"
-                  height="446"
-                  image={product.images}
-                  alt="Product Image"
-                  sx={{ objectFit: "cover" }}
-                />
-                <HoverBox>{/* Add hover actions here if needed */}</HoverBox>
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "block",
-                      overflow: "hidden",
-                      maxHeight: "3.6em",
-                      lineHeight: "1.8em"
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      sx={{
-                        fontSize: "20px",
-                        fontWeight: "bold",
-                        maxHeight: "3.6em",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: "vertical"
-                      }}
-                    >
-                      {product.name}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "block",
-                      overflow: "hidden",
-                      maxHeight: "3.6em",
-                      lineHeight: "1.8em"
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      sx={{
-                        maxHeight: "3.6em",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: "vertical"
-                      }}
-                    >
-                      {product.description}
-                    </Typography>
-                  </Box>
-
-                  <Stack
-                    direction="row"
-                    marginTop="10px"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Typography variant="h6" color="textPrimary">
-                      {discountedPrice.toLocaleString()} đ
-                    </Typography>
-                    {discount !== 0 && (
-                      <Typography
-                        variant="h6"
-                        color="#B0B0B0"
-                        sx={{
-                          fontSize: "16px",
-                          textDecoration: "line-through"
-                        }}
-                      >
-                        {price.toLocaleString()} đ
-                      </Typography>
-                    )}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Box>
-          );
-        })}
+        {favorites.map((product) => (
+          <ProductCard
+            key={product._id}
+            product={product}
+            isFavorite={true}
+            removeFromFavorites={removeFromFavorites}
+          />
+        ))}
       </Stack>
     </Box>
   );

@@ -39,14 +39,20 @@ const HoverBox = styled(Box)({
 
 type ProductCardProps = {
   product: ProductTs;
+  isFavorite: boolean; // Add isFavorite prop
+  removeFromFavorites: (productId: string | number) => void; // Add removeFromFavorites prop
 };
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({
+  product,
+  isFavorite: initialFavorite,
+  removeFromFavorites
+}: ProductCardProps) => {
   const { addToCart } = useCart(); // Use the cart context
 
   const [addedToCart, setAddedToCart] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleAddToCart = () => {
@@ -73,6 +79,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
       if (response.ok) {
         setIsFavorite(!isFavorite);
+        if (isFavorite) {
+          removeFromFavorites(product._id);
+        }
         setSnackbarMessage(
           isFavorite ? "Removed from favorites!" : "Added to favorites!"
         );

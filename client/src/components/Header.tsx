@@ -113,10 +113,12 @@ function Header() {
       )}
       {user ? (
         <Stack
-          direction={"row"}
-          alignItems={"center"}
-          justifyContent={"space-around"}
-          gap={"20px"}
+          direction="row"
+          alignItems="center"
+          justifyContent="start"
+          gap="20px"
+          padding="5px 10px"
+          lineHeight="25px"
         >
           <img
             src="/user.svg"
@@ -133,19 +135,19 @@ function Header() {
             <MenuItem>
               <AccountCircleIcon sx={{ marginRight: "2px" }} /> Edit Profile
             </MenuItem>
-            <MenuItem>
-              <Link
-                to={"/history"}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  textDecoration: "none",
-                  color: "black"
-                }}
-              >
+            <Link
+              to="/history"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "black"
+              }}
+            >
+              <MenuItem>
                 <HistoryIcon sx={{ marginRight: "2px" }} /> History Order
-              </Link>
-            </MenuItem>
+              </MenuItem>
+            </Link>
           </Menu>
           <img
             src="/search.svg"
@@ -153,14 +155,18 @@ function Header() {
             style={{ width: "25px", height: "25px", cursor: "pointer" }}
             onClick={handleClickOpenSearch}
           />
-          <Link to={"/wishlist"}>
+          <Link to="/wishlist">
             <img
               src="/heart.svg"
               alt="heart"
-              style={{ width: "25px", height: "25px" }}
+              style={{
+                width: "25px",
+                height: "25px",
+                lineHeight: "25px",
+                marginTop: "5px"
+              }}
             />
           </Link>
-
           <Badge badgeContent={getCartItemCount()} color="secondary">
             <img
               src="/cart.svg"
@@ -281,10 +287,17 @@ function Header() {
               </Link>
             ))}
             {user ? (
-              <>
+              <Stack direction={"column"} gap={1}>
                 <Typography>Hi, {user.email}</Typography>
-                <MenuItem>Edit Profile</MenuItem>
-              </>
+                <Stack direction={"column"} gap={1}>
+                  <MenuItem sx={{ fontSize: "15px" }}>Edit Profile</MenuItem>
+                  <MenuItem sx={{ fontSize: "15px" }}>
+                    <Link style={{ color: "#000" }} to={"/history"}>
+                      Hítory Order
+                    </Link>{" "}
+                  </MenuItem>
+                </Stack>
+              </Stack>
             ) : (
               <Stack gap={2}>
                 <Box
