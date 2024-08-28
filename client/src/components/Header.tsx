@@ -27,7 +27,7 @@ import { useCart } from "src/hooks/useCart";
 import { useAuth } from "src/contexts/AuthContext";
 
 const menus = [
-  { label: "Home", link: "/" },
+  { label: "Home", link: "/home" },
   { label: "Shop", link: "/product" },
   { label: "About", link: "/about" },
   { label: "Contact", link: "/contact" }
@@ -91,10 +91,10 @@ function Header() {
       direction={"row"}
       alignItems={"center"}
       justifyContent={"space-between"}
-      padding={"0 20px"}
+      padding={"0 30px"}
     >
       <Box>
-        <img src="./nike.png" alt="logo" style={{ width: "100px" }} />
+        <img src="./nike.png" alt="logo" style={{ width: "90px" }} />
       </Box>
       {isMobile ? (
         <IconButton onClick={handleDrawerOpen}>
@@ -104,7 +104,28 @@ function Header() {
         <Stack direction={"row"} alignItems={"center"} gap={"50px"}>
           {menus.map((menu, index) => (
             <Link key={index} to={menu.link}>
-              <Typography key={index} sx={{ color: "black" }}>
+              <Typography
+                key={index}
+                sx={{
+                  color: "black",
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  position: "relative",
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    width: "0%",
+                    height: "2px",
+                    bottom: "-2px",
+                    left: "0",
+                    backgroundColor: "black",
+                    transition: "width 0.3s ease-in-out"
+                  },
+                  "&:hover::after": {
+                    width: "100%"
+                  }
+                }}
+              >
                 {menu.label}
               </Typography>
             </Link>

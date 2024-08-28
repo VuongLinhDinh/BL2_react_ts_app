@@ -109,9 +109,6 @@ const OrderHistory = () => {
                   <Typography variant="body2">
                     {item.product.description}
                   </Typography>
-                  <Typography variant="body2">
-                    ID: {item.product._id}
-                  </Typography>
                   <Divider sx={{ marginY: "3px" }} />
                 </Stack>
                 <Stack>

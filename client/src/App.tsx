@@ -19,6 +19,7 @@ import Cart from "./pages/Cart";
 import Order from "./pages/Order";
 import OrderHistory from "./pages/OderHistory";
 import FavoriteList from "./pages/FavoriteList";
+import Home from "./pages/client/Home";
 
 const routeConfig = [
   {
@@ -72,6 +73,10 @@ const routeConfig = [
       {
         path: "",
         element: <Navigate to="/product" />
+      },
+      {
+        path: "home",
+        element: <Home />
       },
       {
         path: "product",

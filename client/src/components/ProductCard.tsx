@@ -32,7 +32,7 @@ const HoverBox = styled(Box)({
   alignItems: "center",
   opacity: 0,
   transition: "opacity 0.3s",
-  "&:hover": {
+  "&:hover": {  
     opacity: 1
   }
 });

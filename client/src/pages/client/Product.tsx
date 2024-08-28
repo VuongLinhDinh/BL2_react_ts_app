@@ -217,7 +217,11 @@ function Product() {
             ) : (
               filteredProducts.map((product: ProductTs, index: number) => (
                 <Item key={index}>
-                  <ProductCard product={product} />
+                  <ProductCard
+                    product={product}
+                    isFavorite={false}
+                    removeFromFavorites={() => {}}
+                  />
                 </Item>
               ))
             )}

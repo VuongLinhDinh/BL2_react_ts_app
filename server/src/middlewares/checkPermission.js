@@ -5,7 +5,9 @@ export const checkPermission = (roles) => (req, res, next) => {
   const hashPermission = roles.some((role) => req.user.roles.includes(role));
   if (!hashPermission) {
     return res.status(403).json({
-      message: errorMessages.PERMISSION_DENIED,
+      message:
+        errorMessages.PERMISSION_DENIED ||
+        "Permission denied Please contact the administrator"
     });
   }
   next();

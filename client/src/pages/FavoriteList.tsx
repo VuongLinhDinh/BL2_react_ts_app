@@ -38,13 +38,13 @@ const FavoriteList = () => {
   }
 
   return (
-    <Box sx={{ padding: 2 }}>
+    <Box sx={{ padding: 2, marginX: "30px" }}>
       <Stack
         direction="row"
-        spacing={3}
+        gap={2}
         flexWrap="wrap"
         justifyContent="center"
-        alignItems="flex-start"
+        alignItems="center"
       >
         {favorites.map((product) => (
           <ProductCard

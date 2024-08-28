@@ -7,6 +7,7 @@ import cartRouter from "./cart.js";
 import routerFavorite from "./favorite.js";
 import { checkAuth } from "../middlewares/checkAuth.js";
 import orderRouter from "./order.js";
+import { checkIsAdmin } from "../middlewares/checkIsAdmin.js";
 
 const router = Router();
 

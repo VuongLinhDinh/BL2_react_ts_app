@@ -87,7 +87,7 @@ const ProductEdit = () => {
   const onSubmit: SubmitHandler<ProductFormInputs> = async (data) => {
     try {
       setLoading(true);
-      await instance.patch(`/products/${id}`, data); // Update product with PUT request
+      await instance.put(`/products/${id}`, data); // Update product with PUT request
       setSuccessMessage("Product updated successfully!");
       setTimeout(() => {
         navigate("/admin/product/list");
